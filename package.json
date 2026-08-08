@@ -5,13 +5,34 @@
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
-    ".": "./dist/index.js",
-    "./layer-factory": "./dist/layer-factory.js",
-    "./feature-info-provider": "./dist/feature-info-provider.js",
-    "./metadata-renderer": "./dist/metadata-renderer.js",
-    "./style-helpers": "./dist/style-helpers.js",
-    "./utils": "./dist/utils.js",
-    "./types": "./dist/types.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./layer-factory": {
+      "types": "./dist/layer-factory.d.ts",
+      "default": "./dist/layer-factory.js"
+    },
+    "./feature-info-provider": {
+      "types": "./dist/feature-info-provider.d.ts",
+      "default": "./dist/feature-info-provider.js"
+    },
+    "./metadata-renderer": {
+      "types": "./dist/metadata-renderer.d.ts",
+      "default": "./dist/metadata-renderer.js"
+    },
+    "./style-helpers": {
+      "types": "./dist/style-helpers.d.ts",
+      "default": "./dist/style-helpers.js"
+    },
+    "./utils": {
+      "types": "./dist/utils.d.ts",
+      "default": "./dist/utils.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts",
+      "default": "./dist/types.js"
+    }
   },
   "files": [
     "dist",
