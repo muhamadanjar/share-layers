@@ -256,6 +256,22 @@ Check adapter's `getInfo()` method for the specific type.
 
 ## Rules
 
+### Codebase Navigation
+
+Use the knowledge graph (graphify or codebase-memory-mcp) before raw grep/glob:
+
+- **graphify:** Run `graphify query "<question>"` when `graphify-out/graph.json` exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. Browse `graphify-out/wiki/index.md` for broad navigation. Read `graphify-out/GRAPH_REPORT.md` only for architecture reviews.
+- **codebase-memory-mcp:** Use `search_graph`, `trace_path`, and `get_code_snippet` for structural queries and call-graph tracing.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+- Fall back to grep/`rg`, `Glob`, or direct file reads when graphify/codebase-memory is unavailable or insufficient.
+
+### Documentation Workflow (mandatory when writing code)
+
+- **Plan:** Every new feature or architectural design MUST be documented in `docs/plans/[feature-name].md` before any code is written.
+- **Progress:** Execution MUST be recorded in `docs/progress/[feature-name].md`, with a prominent link back to its plan at the top.
+- **Feature docs:** Once complete (Definition of Done), write the final user/developer documentation in `docs/features/[feature-name].md` — focused on *how the feature works* and *how to use it*. Link it back to the original plan and progress files.
+- **Workflow strictness:** Do not start writing code before both the plan and progress files are initialized and linked.
+
 ### Git Operations — STRICTLY FORBIDDEN
 
 **NO git write operations allowed:**
