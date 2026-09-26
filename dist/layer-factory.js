@@ -5,6 +5,7 @@ import { WMSAdapter } from './adapters/wms-adapter';
 import { WMTSAdapter } from './adapters/wmts-adapter';
 import { WFSAdapter } from './adapters/wfs-adapter';
 import { GeoJsonAdapter } from './adapters/geojson-adapter';
+import { RawVectorAdapter } from './adapters/raw-vector-adapter';
 export class LayerFactory {
     constructor() {
         this.adapters = new Map();
@@ -27,6 +28,9 @@ export class LayerFactory {
         const geoJsonAdapter = new GeoJsonAdapter();
         this.register('geojson', geoJsonAdapter);
         this.register('kml', geoJsonAdapter);
+        const rawVectorAdapter = new RawVectorAdapter();
+        this.register('shp', rawVectorAdapter);
+        this.register('geopackage', rawVectorAdapter);
     }
     register(type, adapter) {
         this.adapters.set(type, adapter);

@@ -27,8 +27,10 @@ export declare const DASH_ARRAYS: Record<StrokePattern, [
 /**
  * Create a fill color accessor function for GeoJSON layers.
  * Supports either solid colors or categorical mapping based on feature properties.
+ * When `alpha` (0-255) is provided it overrides the geometry opacity in both modes,
+ * allowing a layer-level opacity multiplier to be applied.
  */
-export declare function makeFillColorAccessor(geomStyle: PolygonStyle, alpha: number): [number, number, number, number] | ((f: {
+export declare function makeFillColorAccessor(geomStyle: PolygonStyle, alpha?: number): [number, number, number, number] | ((f: {
     properties: Record<string, unknown>;
 }) => [number, number, number, number]);
 /**

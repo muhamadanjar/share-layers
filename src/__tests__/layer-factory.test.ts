@@ -15,6 +15,11 @@ describe('LayerFactory', () => {
     expect(adapter).toBeDefined();
   });
 
+  it('registers raw vector adapters on init', () => {
+    expect(factory.getAdapter('shp')).toBeDefined();
+    expect(factory.getAdapter('geopackage')).toBeDefined();
+  });
+
   it('getAdapter returns undefined for unregistered type', () => {
     const adapter = factory.getAdapter('unknown' as any);
     expect(adapter).toBeUndefined();

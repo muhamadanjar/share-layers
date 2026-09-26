@@ -12,11 +12,12 @@ export class MVTAdapter {
         const polyStrokePattern = (poly.strokePattern ?? 'solid');
         const fillPattern = (poly.fillPattern ?? 'solid');
         const useFillPattern = fillPattern !== 'solid';
-        const alpha = Math.round((poly.opacity ?? 0.7) * 255);
+        const layerOpacity = config.opacity ?? 1;
+        const alpha = Math.round((poly.opacity ?? 0.7) * layerOpacity * 255);
         const fillColorAccessor = makeFillColorAccessor(poly, alpha);
-        const polyLineColor = toRGBA(poly.strokeColor, poly.opacity);
-        const lineLineColor = toRGBA(line.strokeColor, line.opacity);
-        const pointLineColor = toRGBA(point.strokeColor, point.opacity);
+        const polyLineColor = toRGBA(poly.strokeColor, (poly.opacity ?? 1) * layerOpacity);
+        const lineLineColor = toRGBA(line.strokeColor, (line.opacity ?? 1) * layerOpacity);
+        const pointLineColor = toRGBA(point.strokeColor, (point.opacity ?? 1) * layerOpacity);
         return new MVTLayer({
             id: `deck-mvt-${config.layer_id}`,
             data: config.tile_url,

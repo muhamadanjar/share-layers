@@ -50,17 +50,21 @@ export const DASH_ARRAYS = {
 /**
  * Create a fill color accessor function for GeoJSON layers.
  * Supports either solid colors or categorical mapping based on feature properties.
+ * When `alpha` (0-255) is provided it overrides the geometry opacity in both modes,
+ * allowing a layer-level opacity multiplier to be applied.
  */
 export function makeFillColorAccessor(geomStyle, alpha) {
+    const effectiveAlpha = alpha ?? Math.round((geomStyle.opacity ?? 0.7) * 255);
     if (geomStyle.colorMode === 'categorical' && geomStyle.categoricalFill) {
         const { field, colorMap, defaultColor } = geomStyle.categoricalFill;
         return (f) => {
             const val = String(f.properties?.[field] ?? '');
             const c = (colorMap[val] ?? defaultColor);
-            return [c[0], c[1], c[2], alpha];
+            return [c[0], c[1], c[2], effectiveAlpha];
         };
     }
-    return toRGBA(geomStyle.fillColor, geomStyle.opacity ?? 0.7);
+    const color = (geomStyle.fillColor ?? STYLE_DEFAULTS.Polygon.fillColor);
+    return [color[0], color[1], color[2], effectiveAlpha];
 }
 /**
  * Fill pattern atlas mapping: defines which tile in the atlas contains each pattern.

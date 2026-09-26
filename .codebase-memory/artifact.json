@@ -1,0 +1,11 @@
+{
+    "schema_version": 2,
+    "commit": "b8b16b005ca3cc7bbf64c05ed440aea60171cf24",
+    "indexed_at": "2026-09-26T05:08:20Z",
+    "project": "share-layers",
+    "nodes": 249,
+    "edges": 535,
+    "original_size": 2228224,
+    "compressed_size": 228199,
+    "compression_level": 3
+}

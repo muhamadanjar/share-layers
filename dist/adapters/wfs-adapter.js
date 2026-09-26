@@ -6,6 +6,7 @@ export class WFSAdapter {
         const poly = resolveStyle(style, 'Polygon');
         const line = resolveStyle(style, 'LineString');
         const point = resolveStyle(style, 'Point');
+        const layerOpacity = config.opacity ?? 1;
         return new GeoJsonLayer({
             id: `deck-wfs-${config.layer_id}`,
             data: config.tile_url,
@@ -14,8 +15,8 @@ export class WFSAdapter {
             filled: true,
             lineWidthMinPixels: line.strokeWidth,
             pointRadiusMinPixels: point.pointRadius,
-            getLineColor: toRGBA(line.strokeColor, line.opacity),
-            getFillColor: toRGBA(poly.fillColor, poly.opacity),
+            getLineColor: toRGBA(line.strokeColor, (line.opacity ?? 1) * layerOpacity),
+            getFillColor: toRGBA(poly.fillColor, (poly.opacity ?? 0.7) * layerOpacity),
         });
     }
     async getInfo(config, coordinate) {

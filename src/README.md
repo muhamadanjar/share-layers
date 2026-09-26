@@ -49,7 +49,7 @@ const layerFactory = new LayerFactory(); // Auto-registers 6 default adapters
 const deckglLayer = layerFactory.createLayer(layerConfig, handleClick);
 ```
 
-## Supported Layer Types (15 Total)
+## Supported Layer Types (17 Total)
 
 ### Core Adapters
 
@@ -61,6 +61,8 @@ const deckglLayer = layerFactory.createLayer(layerConfig, handleClick);
 | `mvt` | MVTAdapter | Mapbox Vector Tiles | ⚠️ Limited (deck.gl) |
 | `geojson` | GeojsonAdapter | Direct GeoJSON | ⚠️ From click handler |
 | `kml` | GeojsonAdapter | KML→GeoJSON conversion | ⚠️ From click handler |
+| `shp` | RawVectorAdapter | Browser-loaded ZIP Shapefile → GeoJSON | ⚠️ From click handler |
+| `geopackage` | RawVectorAdapter | Browser-loaded GeoPackage → GeoJSON | ⚠️ From click handler |
 | `wms` | WMSAdapter | WMS GetMap requests | ✅ GetFeatureInfo HTTP |
 | `wmts` | WMTSAdapter | WMTS GetTile requests | ❌ None |
 | `wfs` | WFSAdapter | WFS GetFeature requests | ✅ Feature properties |
@@ -74,6 +76,39 @@ const deckglLayer = layerFactory.createLayer(layerConfig, handleClick);
 - ✅ Full feature querying support
 - ⚠️ Partial/limited support
 - ❌ No feature info available
+
+### Raw SHP and GeoPackage sources
+
+`shp` expects a `.zip` that contains a `.shp` and matching `.prj`; `geopackage`
+expects a `.gpkg`. Both are fetched directly in a Web Worker, so the remote
+server must permit CORS. Their output is normalized to WGS84 and supports only
+EPSG:4326 and EPSG:3857. The parser preserves feature properties and applies the
+same `file_metadata.style` rules as a normal GeoJSON layer.
+
+```typescript
+const parcels: LayerConfig = {
+  layer_id: 'parcels',
+  layer_type: 'geopackage', // or 'shp' for a ZIP Shapefile
+  filename: 'parcels.gpkg',
+  file_type: 'vector',
+  tile_url: 'https://data.example/parcels.gpkg',
+  visible: true,
+  opacity: 1,
+  source_layer: 'parcels', // required only when the source has multiple layers
+  source_options: {
+    max_source_bytes: 50 * 1024 * 1024,
+    max_features: 200_000,
+    request_init: { credentials: 'include' },
+  },
+  onSourceStatus: (status) => {
+    if (status.state === 'error') console.error(status.error);
+  },
+};
+```
+
+The defaults are 50 MiB per source, 200,000 features, and a 100 MiB per-tab LRU
+cache. Large or unsupported source data should be preprocessed into MVT, WFS, or
+GeoJSON by the backend.
 
 ## Usage Examples
 
@@ -571,3 +606,22 @@ The `renderFeatureProperties` function is synchronous and fast (< 1ms for typica
 - **MapLibre GL:** https://maplibre.org/maplibre-gl-js/
 - **OGC Standards:** WMS, WMTS, WFS specifications
 - **Esri REST API:** https://developers.arcgis.com/rest/services-reference/
+
+## Releases
+
+Releases are created automatically by Semantic Release whenever a commit is
+pushed to `master`. The Git tag is the version source of truth and uses the
+format `vX.Y.Z`; the package version is set in the published npm artifact.
+
+Use Conventional Commits for changes that should create a release:
+
+- `fix: ...` creates a patch release.
+- `feat: ...` creates a minor release.
+- `feat!: ...` or a `BREAKING CHANGE:` footer creates a major release.
+- `docs: ...`, `chore: ...`, and other non-release commit types do not publish.
+
+One-time npm setup: configure `@muhamadanjar/layers` as an npm Trusted Publisher
+for the `muhamadanjar/share-layers` GitHub repository and select
+`.github/workflows/release.yml`. The workflow uses GitHub OIDC, so no long-lived
+`NPM_TOKEN` is needed. It creates the GitHub release, publishes the public
+scoped package to npm, and creates the corresponding Git tag.

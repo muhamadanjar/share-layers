@@ -40,8 +40,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp node_modules/@ngageoint/geopackage/dist/sql-wasm.wasm dist/sql-wasm.wasm",
     "test": "vitest",
+    "release": "semantic-release",
     "prepublishOnly": "npm run build"
   },
   "author": "Muhamad Anjar",
@@ -49,6 +50,16 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:muhamadanjar/share-layers.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "repositoryUrl": "https://github.com/muhamadanjar/share-layers.git",
+    "tagFormat": "v${version}"
   },
   "keywords": [
     "geospatial",
@@ -59,12 +70,17 @@
     "tiles"
   ],
   "devDependencies": {
+    "@types/shpjs": "^3.4.7",
+    "semantic-release": "^25.0.9",
     "typescript": "^5.3.0",
     "vitest": "^4.1.9"
   },
   "dependencies": {
+    "@deck.gl/extensions": "^9.3.4",
     "@deck.gl/geo-layers": "^9.3.5",
     "@deck.gl/layers": "^9.3.5",
-    "@deck.gl/extensions": "^9.3.4"
+    "@ngageoint/geopackage": "^4.2.9",
+    "fflate": "^0.8.2",
+    "shpjs": "^6.2.0"
   }
 }

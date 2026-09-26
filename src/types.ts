@@ -5,6 +5,8 @@ export type LayerType =
   | 'mbtiles'
   | 'geojson'
   | 'kml'
+  | 'shp'
+  | 'geopackage'
   | 'wms'
   | 'wmts'
   | 'wfs'
@@ -30,7 +32,38 @@ export interface LayerConfig {
   opacity: number;
   bbox?: [number, number, number, number];
   file_metadata?: FileMetadata;
+  /** Selects a feature table in a GeoPackage or a .shp member in a ZIP archive. */
+  source_layer?: string;
+  /** Runtime options used when a raw vector source is loaded in a Web Worker. */
+  source_options?: RawVectorSourceOptions;
+  /** Receives the asynchronous loading state for SHP and GeoPackage sources. */
+  onSourceStatus?: (status: RawVectorSourceStatus) => void;
 }
+
+export interface RawVectorSourceOptions {
+  /** Maximum downloaded source size. Defaults to 50 MiB. */
+  max_source_bytes?: number;
+  /** Maximum number of parsed features. Defaults to 200,000. */
+  max_features?: number;
+  /** Browser fetch options supported by the source worker. */
+  request_init?: RawVectorRequestInit;
+}
+
+export interface RawVectorRequestInit {
+  method?: string;
+  headers?: HeadersInit;
+  credentials?: RequestCredentials;
+  mode?: RequestMode;
+  cache?: RequestCache;
+  redirect?: RequestRedirect;
+  referrerPolicy?: ReferrerPolicy;
+  integrity?: string;
+}
+
+export type RawVectorSourceStatus =
+  | { state: 'loading' }
+  | { state: 'ready'; featureCount: number }
+  | { state: 'error'; error: string };
 
 export interface TileProcess {
   percent: number;

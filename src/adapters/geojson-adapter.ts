@@ -3,26 +3,36 @@ import type { LayerAdapter } from './types';
 import type { LayerConfig, FeatureInfoResult } from '../types';
 import { resolveStyle, toRGBA, makeFillColorAccessor } from '../style-helpers';
 
+export function createStyledGeoJsonLayer(
+  config: LayerConfig,
+  data: unknown,
+  onClick?: (info: any) => void,
+  idPrefix = 'deck-geojson',
+): GeoJsonLayer {
+  const style = config.file_metadata?.style;
+  const poly = resolveStyle(style, 'Polygon');
+  const line = resolveStyle(style, 'LineString');
+  const point = resolveStyle(style, 'Point');
+  const layerOpacity = config.opacity ?? 1;
+  const alpha = Math.round((poly.opacity ?? 0.7) * layerOpacity * 255);
+
+  return new GeoJsonLayer({
+    id: `${idPrefix}-${config.layer_id}`,
+    data,
+    pickable: true,
+    stroked: true,
+    filled: true,
+    lineWidthMinPixels: line.strokeWidth,
+    pointRadiusMinPixels: point.pointRadius,
+    getLineColor: toRGBA(line.strokeColor, (line.opacity ?? 1) * layerOpacity),
+    getFillColor: makeFillColorAccessor(poly, alpha),
+    onClick,
+  } as any);
+}
+
 export class GeoJsonAdapter implements LayerAdapter {
   createDeckLayer(config: LayerConfig, onClick?: (info: any) => void): any {
-    const style = config.file_metadata?.style;
-    const poly = resolveStyle(style, 'Polygon');
-    const line = resolveStyle(style, 'LineString');
-    const point = resolveStyle(style, 'Point');
-    const layerOpacity = config.opacity ?? 1;
-    const alpha = Math.round((poly.opacity ?? 0.7) * layerOpacity * 255);
-
-    return new GeoJsonLayer({
-      id: `deck-geojson-${config.layer_id}`,
-      data: config.tile_url,
-      pickable: true,
-      stroked: true,
-      filled: true,
-      lineWidthMinPixels: line.strokeWidth,
-      pointRadiusMinPixels: point.pointRadius,
-      getLineColor: toRGBA(line.strokeColor, (line.opacity ?? 1) * layerOpacity),
-      getFillColor: makeFillColorAccessor(poly, alpha),
-    } as any);
+    return createStyledGeoJsonLayer(config, config.tile_url, onClick);
   }
 
   async getInfo(config: LayerConfig, coordinate: [number, number]): Promise<FeatureInfoResult> {
