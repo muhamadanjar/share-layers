@@ -4,7 +4,7 @@ import type { LayerAdapter } from './types';
 import type { LayerConfig, FeatureInfoResult } from '../types';
 
 function buildWmsTileUrl(baseUrl: string, params: Record<string, string>, bbox: any, z: number): string {
-  const layers = params.layers || 'default';
+  const layers = params.layers || params.geoserver.layer_name || 'default';
   const format = params.format || 'image/png';
 
   const queryParams = new URLSearchParams({

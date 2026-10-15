@@ -620,8 +620,12 @@ Use Conventional Commits for changes that should create a release:
 - `feat!: ...` or a `BREAKING CHANGE:` footer creates a major release.
 - `docs: ...`, `chore: ...`, and other non-release commit types do not publish.
 
-One-time npm setup: configure `@muhamadanjar/layers` as an npm Trusted Publisher
-for the `muhamadanjar/share-layers` GitHub repository and select
-`.github/workflows/release.yml`. The workflow uses GitHub OIDC, so no long-lived
-`NPM_TOKEN` is needed. It creates the GitHub release, publishes the public
-scoped package to npm, and creates the corresponding Git tag.
+Bootstrap the first release by adding a granular npm token with publish access as
+the `NPM_TOKEN` GitHub Actions secret. npm requires a package to exist before it
+can have a Trusted Publisher. After the first publish, configure
+`@muhamadanjar/layers` as an npm Trusted Publisher for the
+`muhamadanjar/share-layers` GitHub repository and select `release.yml` as the
+workflow filename. Then delete `NPM_TOKEN`; the workflow's GitHub OIDC identity
+will publish future releases without a long-lived token. Each release creates the
+GitHub release, publishes the public scoped package to npm, and creates the
+corresponding Git tag.

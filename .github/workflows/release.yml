@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
   id-token: write
 
 jobs:
@@ -36,4 +38,7 @@ jobs:
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Required only to publish the package for the first time. After npm
+          # Trusted Publisher is configured, this unset secret is replaced by OIDC.
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm run release
