@@ -132,8 +132,31 @@ const config: LayerConfig = {
 const deckglLayer = layerFactory.createLayer(config, handleClick);
 deckglLayers.push(deckglLayer);
 ```
+### 2. Tileserver GeoServer WMS Metadata
 
-### 2. Feature Info Retrieval on Click
+Tileserver stores published GeoServer details under `file_metadata.geoserver`. The shared WMS adapter uses `geoserver.layer_name` when the normalized `layers` field is absent.
+
+```typescript
+const publishedWms: LayerConfig = {
+  layer_id: 'published-wms',
+  layer_type: 'wms',
+  filename: 'states.wms',
+  file_type: 'external',
+  tile_url: 'https://maps.example/geoserver/tileserver/wms',
+  visible: true,
+  opacity: 1,
+  file_metadata: {
+    geoserver: {
+      layer_name: 'tileserver:states',
+      wms_url: 'https://maps.example/geoserver/tileserver/wms',
+      wfs_url: 'https://maps.example/geoserver/tileserver/wfs',
+    },
+  },
+};
+```
+
+### 3. Feature Info Retrieval on Click
+
 
 ```typescript
 const handleMapClick = async (clickInfo: any) => {
@@ -160,7 +183,7 @@ const handleMapClick = async (clickInfo: any) => {
 };
 ```
 
-### 3. Rendering Feature Properties (3 Modes)
+### 4. Rendering Feature Properties (3 Modes)
 
 ```typescript
 import { renderFeatureProperties } from '@/lib/layers/metadata-renderer';

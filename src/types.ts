@@ -88,6 +88,16 @@ export interface DownloadProcess {
   manifest?: unknown;
 }
 
+export interface GeoServerMetadata {
+  layer_name: string;
+  store_name?: string;
+  workspace?: string;
+  wms_url?: string;
+  wfs_url?: string;
+  bbox?: [number, number, number, number] | null;
+  style_name?: string;
+}
+
 export interface FileMetadata {
   style?: LayerStyle;
   renderMode?: 'original' | 'fields' | 'custom';
@@ -95,6 +105,15 @@ export interface FileMetadata {
   custom?: string;
   tile_process?: TileProcess;
   download_process?: DownloadProcess;
+  geoserver?: GeoServerMetadata;
+  layers?: string;
+  layer?: string;
+  styles?: string;
+  format?: string;
+  tilematrixset?: string;
+  token?: string;
+  layerIndex?: string | number;
+  where?: string;
   [key: string]: unknown;
 }
 

@@ -1,11 +1,32 @@
-import { TileLayer } from '@deck.gl/geo-layers';
+import { TileLayer, type GeoBoundingBox, type TileLayerProps } from '@deck.gl/geo-layers';
 import { BitmapLayer } from '@deck.gl/layers';
 import type { LayerAdapter } from './types';
-import type { LayerConfig, FeatureInfoResult } from '../types';
+import type { LayerConfig, FeatureInfoResult, FileMetadata } from '../types';
 
-function buildWmsTileUrl(baseUrl: string, params: Record<string, string>, bbox: any, z: number): string {
-  const layers = params.layers || params.geoserver.layer_name || 'default';
-  const format = params.format || 'image/png';
+interface WmsTileBBox {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+type WmsTileLoadProps = Parameters<
+  NonNullable<TileLayerProps<ImageBitmap | null>['getTileData']>
+>[0];
+
+function isGeoBoundingBox(
+  bbox: WmsTileLoadProps['bbox'],
+): bbox is GeoBoundingBox {
+  return 'west' in bbox && 'south' in bbox && 'east' in bbox && 'north' in bbox;
+}
+
+
+function buildWmsTileUrl(
+  baseUrl: string,
+  metadata: FileMetadata | undefined,
+  bbox: WmsTileBBox,
+): string {
+  const layers = metadata?.layers || metadata?.geoserver?.layer_name || 'default';
+  const format = metadata?.format || 'image/png';
 
   const queryParams = new URLSearchParams({
     SERVICE: 'WMS',
@@ -28,28 +49,31 @@ function buildWmsTileUrl(baseUrl: string, params: Record<string, string>, bbox: 
 
 export class WMSAdapter implements LayerAdapter {
   createDeckLayer(config: LayerConfig, onClick?: (info: any) => void): any {
-    return new TileLayer({
+    return new TileLayer<ImageBitmap | null>({
       id: `deck-wms-${config.layer_id}`,
       data: [],
       tileSize: 256,
       pickable: true,
       opacity: config.opacity ?? 0.8,
-      getTileData: async (props: any) => {
-        const { x, y, z, bbox } = props;
-        const url = buildWmsTileUrl(config.tile_url, (config.file_metadata || {}) as Record<string, string>, bbox, z);
+      getTileData: async ({ bbox }: WmsTileLoadProps) => {
+        if (!isGeoBoundingBox(bbox)) return null;
+        const url = buildWmsTileUrl(config.tile_url, config.file_metadata, bbox);
         const resp = await fetch(url);
         if (!resp.ok) return null;
         return resp.blob().then(createImageBitmap);
       },
-      renderSubLayers: (props: any) => {
-        const { west, south, east, north } = props.tile.bbox;
-        return new BitmapLayer(props, {
+      renderSubLayers: (props) => {
+        const bbox = props.tile.bbox;
+        if (!isGeoBoundingBox(bbox)) return null;
+        const { west, south, east, north } = bbox;
+        const { data: _tileData, tile: _tile, ...subLayerProps } = props;
+        return new BitmapLayer(subLayerProps, {
           data: undefined,
           image: props.data,
           bounds: [west, south, east, north],
         });
       },
-    } as any);
+    });
   }
 
   async getInfo(config: LayerConfig, coordinate: [number, number]): Promise<FeatureInfoResult> {
