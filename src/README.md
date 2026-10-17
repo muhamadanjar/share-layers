@@ -61,7 +61,7 @@ const deckglLayer = layerFactory.createLayer(layerConfig, handleClick);
 | `mvt` | MVTAdapter | Mapbox Vector Tiles | ⚠️ Limited (deck.gl) |
 | `geojson` | GeojsonAdapter | Direct GeoJSON | ⚠️ From click handler |
 | `kml` | GeojsonAdapter | KML→GeoJSON conversion | ⚠️ From click handler |
-| `shp` | RawVectorAdapter | Browser-loaded ZIP Shapefile → GeoJSON | ⚠️ From click handler |
+| `shp` | RawVectorAdapter | Web Worker ZIP parser → styled DeckGL GeoJsonLayer | ⚠️ From click handler |
 | `geopackage` | RawVectorAdapter | Browser-loaded GeoPackage → GeoJSON | ⚠️ From click handler |
 | `wms` | WMSAdapter | WMS GetMap requests | ✅ GetFeatureInfo HTTP |
 | `wmts` | WMTSAdapter | WMTS GetTile requests | ❌ None |
@@ -79,11 +79,13 @@ const deckglLayer = layerFactory.createLayer(layerConfig, handleClick);
 
 ### Raw SHP and GeoPackage sources
 
-`shp` expects a `.zip` that contains a `.shp` and matching `.prj`; `geopackage`
-expects a `.gpkg`. Both are fetched directly in a Web Worker, so the remote
-server must permit CORS. Their output is normalized to WGS84 and supports only
-EPSG:4326 and EPSG:3857. The parser preserves feature properties and applies the
-same `file_metadata.style` rules as a normal GeoJSON layer.
+`shp` expects a `.zip` that contains a `.shp`, matching `.dbf`, and `.prj`;
+`geopackage` expects a `.gpkg`. Both are fetched directly in a Web Worker, so
+the remote server must permit CORS. SHP ZIP archives are parsed internally with
+`fflate` and rendered through the styled DeckGL `GeoJsonLayer`; no external SHP
+runtime dependency is required. The output is normalized to WGS84 and supports only
+EPSG:4326 and EPSG:3857. The parser preserves feature properties and applies
+the same `file_metadata.style` rules as a normal GeoJSON layer.
 
 ```typescript
 const parcels: LayerConfig = {

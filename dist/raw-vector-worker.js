@@ -1,4 +1,4 @@
-import { unzipSync } from 'fflate';
+import { parseShapefileZip } from './shapefile-parser';
 function errorMessage(error) {
     return error instanceof Error ? error.message : String(error);
 }
@@ -13,24 +13,6 @@ function selectSourceLayer(available, selected, format) {
     if (available.length === 0)
         throw new Error(`${format} source contains no feature layers.`);
     throw new Error(`${format} source has multiple layers (${available.join(', ')}). Set source_layer explicitly.`);
-}
-function findZipEntry(entries, expectedName) {
-    const entryName = Object.keys(entries).find((name) => name.toLowerCase() === expectedName.toLowerCase());
-    return entryName ? entries[entryName] : undefined;
-}
-function assertShapefileCrs(prj, sourceLayer) {
-    if (!prj) {
-        throw new Error(`Shapefile '${sourceLayer}' is missing a .prj file. Only EPSG:4326 and EPSG:3857 are supported.`);
-    }
-    const definition = new TextDecoder().decode(prj);
-    const isWebMercator = /(?:EPSG[^\d]*3857|AUTHORITY\s*\[\s*"EPSG"\s*,\s*"3857"\s*\]|Pseudo[_ ]Mercator|Web[_ ]Mercator)/i.test(definition);
-    if (isWebMercator)
-        return;
-    const isProjected = /(?:PROJCS|PROJCRS)\s*\[/i.test(definition);
-    const isWgs84 = /(?:EPSG[^\d]*4326|AUTHORITY\s*\[\s*"EPSG"\s*,\s*"4326"\s*\]|WGS[_ ]?84)/i.test(definition);
-    if (!isProjected && isWgs84)
-        return;
-    throw new Error(`Shapefile '${sourceLayer}' uses an unsupported CRS. Only EPSG:4326 and EPSG:3857 are supported.`);
 }
 function assertGeoPackageCrs(srs, sourceLayer) {
     const organization = srs.organization?.toUpperCase();
@@ -48,22 +30,7 @@ function estimateBytes(data) {
     return new TextEncoder().encode(JSON.stringify(data)).byteLength;
 }
 async function parseShapefile(buffer, request) {
-    const entries = unzipSync(new Uint8Array(buffer));
-    const layerNames = Object.keys(entries)
-        .filter((name) => name.toLowerCase().endsWith('.shp'))
-        .map((name) => name.slice(0, -4));
-    const sourceLayer = selectSourceLayer(layerNames, request.sourceLayer, 'Shapefile ZIP');
-    assertShapefileCrs(findZipEntry(entries, `${sourceLayer}.prj`), sourceLayer);
-    const module = await import('shpjs');
-    const parser = (module.default ?? module);
-    const parsed = await parser(buffer);
-    const collections = Array.isArray(parsed) ? parsed : [parsed];
-    const collection = collections.find((candidate) => candidate.fileName === sourceLayer);
-    if (!collection) {
-        throw new Error(`Shapefile parser did not return selected source_layer '${sourceLayer}'.`);
-    }
-    assertFeatureCount(collection.features, request.maxFeatures);
-    return { type: 'FeatureCollection', features: collection.features };
+    return parseShapefileZip(buffer, request.sourceLayer, request.maxFeatures);
 }
 async function parseGeoPackage(buffer, request) {
     const module = await import('@ngageoint/geopackage');
