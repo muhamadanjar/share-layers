@@ -1,3 +1,4 @@
+export { MapboxOverlay } from '@deck.gl/mapbox';
 export { layerFactory } from './layer-factory';
 export { getFeatureInfo } from './feature-info-provider';
 export { renderFeatureProperties, renderTemplate } from './metadata-renderer';
