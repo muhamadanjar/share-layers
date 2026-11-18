@@ -5,8 +5,8 @@ import type { LayerAdapter } from './types';
 import type { LayerConfig, FeatureInfoResult } from '../types';
 import {
   resolveStyle,
-  toRGBA,
   makeFillColorAccessor,
+  makeStrokeColorAccessor,
   DASH_ARRAYS,
   FILL_PATTERN_MAPPING,
   getFillPatternAtlas,
@@ -19,19 +19,19 @@ export class MVTAdapter implements LayerAdapter {
     const poly = resolveStyle(style, 'Polygon');
     const line = resolveStyle(style, 'LineString');
     const point = resolveStyle(style, 'Point');
+    const layerOpacity = config.opacity ?? 1
 
     const lineStrokePattern = (line.strokePattern ?? 'solid') as StrokePattern;
     const polyStrokePattern = (poly.strokePattern ?? 'solid') as StrokePattern;
     const fillPattern = (poly.fillPattern ?? 'solid') as FillPattern;
     const useFillPattern = fillPattern !== 'solid';
 
-    const layerOpacity = config.opacity ?? 1;
-    const alpha = Math.round((poly.opacity ?? 0.7) * layerOpacity * 255);
-    const fillColorAccessor = makeFillColorAccessor(poly, alpha);
+    const fillColorAccessor = makeFillColorAccessor(poly, Math.round((poly.opacity ?? 0.7) * layerOpacity * 255));
+    const pointFillColorAccessor = makeFillColorAccessor(point, Math.round((point.opacity ?? 0.9) * layerOpacity * 255));
 
-    const polyLineColor = toRGBA(poly.strokeColor, (poly.opacity ?? 1) * layerOpacity);
-    const lineLineColor = toRGBA(line.strokeColor, (line.opacity ?? 1) * layerOpacity);
-    const pointLineColor = toRGBA(point.strokeColor, (point.opacity ?? 1) * layerOpacity);
+    const polyStrokeAccessor = makeStrokeColorAccessor(poly, Math.round((poly.opacity ?? 1) * layerOpacity * 255));
+    const lineStrokeAccessor = makeStrokeColorAccessor(line, Math.round((line.opacity ?? 1) * layerOpacity * 255));
+    const pointStrokeAccessor = makeStrokeColorAccessor(point, Math.round((point.opacity ?? 1) * layerOpacity * 255));
 
     return new MVTLayer({
       id: `deck-mvt-${config.layer_id}`,
@@ -39,14 +39,23 @@ export class MVTAdapter implements LayerAdapter {
       pickable: true,
       filled: true,
       stroked: true,
-      pointRadiusScale: point.pointRadius,
-      getFillColor: fillColorAccessor,
+      pointRadiusMinPixels: point.pointRadius ?? 6,
+      getPointRadius: point.pointRadius ?? 6,
+      getFillColor: (f: any) => {
+        const geometryType = f?.geometry?.type ?? '';
+        const accessor =
+          geometryType === 'Point' || geometryType === 'MultiPoint'
+            ? pointFillColorAccessor
+            : fillColorAccessor;
+        return typeof accessor === 'function' ? accessor(f) : accessor;
+      },
       getLineColor: (f: any) => {
         const geomType = f?.geometry?.type ?? '';
         if (geomType === 'LineString' || geomType === 'MultiLineString')
-          return lineLineColor;
-        if (geomType === 'Point' || geomType === 'MultiPoint') return pointLineColor;
-        return polyLineColor;
+          return typeof lineStrokeAccessor === 'function' ? lineStrokeAccessor(f) : lineStrokeAccessor;
+        if (geomType === 'Point' || geomType === 'MultiPoint')
+          return typeof pointStrokeAccessor === 'function' ? pointStrokeAccessor(f) : pointStrokeAccessor;
+        return typeof polyStrokeAccessor === 'function' ? polyStrokeAccessor(f) : polyStrokeAccessor;
       },
       getLineWidth: (f: any) => {
         const geomType = f?.geometry?.type ?? '';

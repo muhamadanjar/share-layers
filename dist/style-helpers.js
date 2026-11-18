@@ -47,6 +47,74 @@ export const DASH_ARRAYS = {
     dotted: [1, 4],
     'dash-dot': [8, 4, 1, 4],
 };
+function assertCategoryLimit(style) {
+    if ((style.classes?.length ?? 0) > 100 || (style.ranges?.length ?? 0) > 100) {
+        throw new RangeError('Categorical styles cannot exceed 100 classes');
+    }
+}
+function resolveCategoricalColor(style, value, fallbackColor, stroke = false) {
+    if (!style)
+        return fallbackColor;
+    const key = value == null || value === '' ? null : value;
+    if (style.classes?.length) {
+        const cls = style.classes.find((c) => {
+            const classValue = c.value == null || c.value === '' ? null : c.value;
+            if (key === null)
+                return classValue === null;
+            if (classValue === null)
+                return false;
+            return classValue === key || String(classValue) === String(key);
+        });
+        if (cls) {
+            const color = stroke ? (cls.strokeColor ?? cls.fillColor) : cls.fillColor;
+            if (color)
+                return color;
+        }
+    }
+    if (key === null || key === undefined || key === '') {
+        // NoData explicit class already checked above; otherwise use default
+    }
+    else {
+        if (stroke) {
+            if (style.strokeColorMap && Object.prototype.hasOwnProperty.call(style.strokeColorMap, String(key)))
+                return style.strokeColorMap[String(key)];
+            if (style.ranges?.length) {
+                const n = Number(key);
+                if (Number.isFinite(n)) {
+                    for (let i = 0; i < style.ranges.length; i++) {
+                        const r = style.ranges[i];
+                        const last = i === style.ranges.length - 1;
+                        if (n >= r.min && (last ? n <= r.max : n < r.max)) {
+                            const color = stroke ? (r.strokeColor ?? r.fillColor) : r.fillColor;
+                            if (color)
+                                return color;
+                        }
+                    }
+                }
+            }
+        }
+        else {
+            if (style.colorMap && Object.prototype.hasOwnProperty.call(style.colorMap, String(key)))
+                return style.colorMap[String(key)];
+            if (style.ranges?.length) {
+                const n = Number(key);
+                if (Number.isFinite(n)) {
+                    for (let i = 0; i < style.ranges.length; i++) {
+                        const r = style.ranges[i];
+                        const last = i === style.ranges.length - 1;
+                        if (n >= r.min && (last ? n <= r.max : n < r.max)) {
+                            if (r.fillColor)
+                                return r.fillColor;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (stroke)
+        return style.defaultStrokeColor ?? style.defaultColor;
+    return style.defaultColor;
+}
 /**
  * Create a fill color accessor function for GeoJSON layers.
  * Supports either solid colors or categorical mapping based on feature properties.
@@ -56,14 +124,35 @@ export const DASH_ARRAYS = {
 export function makeFillColorAccessor(geomStyle, alpha) {
     const effectiveAlpha = alpha ?? Math.round((geomStyle.opacity ?? 0.7) * 255);
     if (geomStyle.colorMode === 'categorical' && geomStyle.categoricalFill) {
-        const { field, colorMap, defaultColor } = geomStyle.categoricalFill;
+        const style = geomStyle.categoricalFill;
+        assertCategoryLimit(style);
+        const field = style.field;
         return (f) => {
-            const val = String(f.properties?.[field] ?? '');
-            const c = (colorMap[val] ?? defaultColor);
+            const val = f.properties?.[field];
+            const c = resolveCategoricalColor(style, val, geomStyle.fillColor ?? STYLE_DEFAULTS.Polygon.fillColor, false);
             return [c[0], c[1], c[2], effectiveAlpha];
         };
     }
     const color = (geomStyle.fillColor ?? STYLE_DEFAULTS.Polygon.fillColor);
+    return [color[0], color[1], color[2], effectiveAlpha];
+}
+export function makeStrokeColorAccessor(geomStyle, alpha) {
+    const effectiveAlpha = alpha ?? Math.round((geomStyle.opacity ?? 0.7) * 255);
+    const isCategorical = geomStyle.strokeColorMode === 'categorical' ||
+        (geomStyle.strokeColorMode === undefined &&
+            'colorMode' in geomStyle &&
+            geomStyle.colorMode === 'categorical');
+    const style = geomStyle.categoricalStroke;
+    if (isCategorical && style) {
+        assertCategoryLimit(style);
+        const field = style.field;
+        return (f) => {
+            const val = f.properties?.[field];
+            const c = resolveCategoricalColor(style, val, geomStyle.strokeColor ?? STYLE_DEFAULTS.Polygon.strokeColor, true);
+            return [c[0], c[1], c[2], effectiveAlpha];
+        };
+    }
+    const color = (geomStyle.strokeColor ?? STYLE_DEFAULTS.Polygon.strokeColor);
     return [color[0], color[1], color[2], effectiveAlpha];
 }
 /**

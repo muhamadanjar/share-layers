@@ -124,7 +124,9 @@ export interface PointStyle {
   pointRadius?: number;
   opacity?: number;
   colorMode?: 'solid' | 'categorical';
+  strokeColorMode?: 'solid' | 'categorical';
   categoricalFill?: CategoricalStyle;
+  categoricalStroke?: CategoricalStyle;
 }
 
 export interface LineStringStyle {
@@ -132,6 +134,8 @@ export interface LineStringStyle {
   strokeWidth?: number;
   strokePattern?: 'solid' | 'dashed' | 'dotted' | 'dash-dot';
   opacity?: number;
+  strokeColorMode?: 'solid' | 'categorical';
+  categoricalStroke?: CategoricalStyle;
 }
 
 export interface PolygonStyle {
@@ -142,7 +146,9 @@ export interface PolygonStyle {
   strokePattern?: 'solid' | 'dashed' | 'dotted' | 'dash-dot';
   opacity?: number;
   colorMode?: 'solid' | 'categorical';
+  strokeColorMode?: 'solid' | 'categorical';
   categoricalFill?: CategoricalStyle;
+  categoricalStroke?: CategoricalStyle;
 }
 
 export interface LayerStyle {
@@ -151,12 +157,39 @@ export interface LayerStyle {
   Polygon?: PolygonStyle;
   categoricalFill?: CategoricalStyle;
   categoricalLine?: CategoricalStyle;
+  raster?: RasterStyle;
 }
 
 export interface CategoricalStyle {
   field: string;
-  colorMap: Record<string, [number, number, number]>;
+  colorMap?: Record<string, [number, number, number]>;
   defaultColor: [number, number, number];
+  classes?: Array<{ value?: string | number | boolean | null; fillColor?: [number, number, number]; strokeColor?: [number, number, number] }>;
+  strokeColorMap?: Record<string, [number, number, number]>;
+  defaultStrokeColor?: [number, number, number];
+  ranges?: Array<{ min: number; max: number; fillColor?: [number, number, number]; strokeColor?: [number, number, number] }>;
+}
+
+export interface RasterStyle {
+  colorMode?: 'simple' | 'categorized';
+  renderMode?: 'single-band' | 'rgb';
+  band?: number;
+  redBand?: number;
+  greenBand?: number;
+  blueBand?: number;
+  ramp?: 'grayscale' | 'viridis';
+  stretch?: 'percentile_2_98' | 'manual';
+  min?: number;
+  max?: number;
+  redMin?: number;
+  redMax?: number;
+  greenMin?: number;
+  greenMax?: number;
+  blueMin?: number;
+  blueMax?: number;
+  noDataColor?: [number, number, number];
+  classes?: Array<{ min: number; max: number; color: [number, number, number] }>;
+  classCount?: number;
 }
 
 export interface FieldConfig {

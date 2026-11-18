@@ -24,15 +24,18 @@ export declare const DASH_ARRAYS: Record<StrokePattern, [
     number,
     number
 ] | [number, number, number, number]>;
+export type FeatureColor = [number, number, number, number];
+export type FeatureColorAccessor = FeatureColor | ((feature: {
+    properties: Record<string, unknown>;
+}) => FeatureColor);
 /**
  * Create a fill color accessor function for GeoJSON layers.
  * Supports either solid colors or categorical mapping based on feature properties.
  * When `alpha` (0-255) is provided it overrides the geometry opacity in both modes,
  * allowing a layer-level opacity multiplier to be applied.
  */
-export declare function makeFillColorAccessor(geomStyle: PolygonStyle, alpha?: number): [number, number, number, number] | ((f: {
-    properties: Record<string, unknown>;
-}) => [number, number, number, number]);
+export declare function makeFillColorAccessor(geomStyle: PointStyle | PolygonStyle, alpha?: number): FeatureColorAccessor;
+export declare function makeStrokeColorAccessor(geomStyle: PointStyle | LineStringStyle | PolygonStyle, alpha?: number): FeatureColorAccessor;
 /**
  * Fill pattern atlas mapping: defines which tile in the atlas contains each pattern.
  * Atlas is 256px wide (4 tiles × 64px) and 64px tall.

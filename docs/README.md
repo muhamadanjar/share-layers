@@ -11,3 +11,6 @@
 - [Plan: align layer types with Tileserver](plans/align-layer-types-with-tileserver.md)
 - [Progress: align layer types with Tileserver](progress/align-layer-types-with-tileserver.md)
 - [Progress: fix semantic-release workflow](progress/fix-semantic-release-workflow.md)
+- [Plan: vector and raster symbology](plans/vector-raster-symbology.md)
+- [Progress: vector and raster symbology](progress/vector-raster-symbology.md)
+- [Feature: vector and raster symbology](features/vector-raster-symbology.md)
