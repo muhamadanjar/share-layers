@@ -6,13 +6,13 @@ The release workflow grants `contents: write` and `id-token: write`, but semanti
 
 ## Scope
 
-- Update `.github/workflows/release.yml` permissions only.
-- Preserve the existing npm authentication fallback (`NPM_TOKEN`) and OIDC permission.
-- Do not change release branches, package metadata, scripts, or dependency management.
+- Update `.github/workflows/release.yml` to run semantic-release through `npx`.
+- Configure release tags as `X.X.X` without a `v` prefix.
+- Update the release feature documentation.
 
 ## Acceptance criteria
 
-- The release job can create GitHub releases and write semantic-release comments on issues and pull requests.
-- npm publishing authentication remains available through the configured token/OIDC path.
+- A push to `master` invokes semantic-release after tests and build.
+- semantic-release creates version tags in `X.X.X` format (for example, `1.2.3`).
 - Workflow YAML remains valid.
 - Existing package tests and build continue to pass.

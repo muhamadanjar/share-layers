@@ -5,16 +5,23 @@ Plan: [Fix semantic-release GitHub Actions workflow](../plans/fix-semantic-relea
 ## Investigation
 
 - Located the only release workflow at `.github/workflows/release.yml`.
-- Confirmed `master`, repository URL, `v${version}` tags, npm scripts, and npm lockfile are consistent.
+- Confirmed `master`, repository URL, npm scripts, and npm lockfile are consistent.
 - Reproduced the local dry run; it stopped at Git push authentication because local credentials are unavailable, so the local failure does not validate the hosted workflow token path.
 - Compared the workflow with the semantic-release GitHub Actions recipe: `issues: write` and `pull-requests: write` are missing from the explicit permissions block.
+
+## Requested version-format update
+
+- Confirmed `.github/workflows/release.yml` already ran semantic-release via `npm run release`; that script invokes the local `semantic-release` binary.
+- The configured tag format included a `v` prefix, so it did not match the requested `X.X.X` format.
 
 ## Implementation
 
 - Added `issues: write` and `pull-requests: write` to the workflow permissions block. The existing `contents: write`, `id-token: write`, and npm token fallback remain unchanged.
+- Updated the release step to run `npx semantic-release`.
+- Changed `package.json` tag format to `${version}` so tags are `X.X.X` with no `v` prefix.
 
 ## Validation
 
-- Release workflow YAML parsed successfully with `js-yaml`.
-- `npm test -- --run` passed: 22 test files, 82 tests.
-- `npm run build` reached TypeScript compilation but failed on the pre-existing user change in `src/adapters/wms-adapter.ts:7` (`layer_name` is not a property of the current type). Generated dist changes from this check were restored; the workflow-only change does not cause this failure.
+- `npx semantic-release --help` confirms the command runs using the installed package.
+- Parsed `.github/workflows/release.yml` with `js-yaml`; it is valid and the release step is `npx semantic-release`.
+- Did not execute a real release; that requires a push to `master` and working GitHub/npm publishing credentials.

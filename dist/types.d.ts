@@ -73,6 +73,7 @@ export interface GeoServerMetadata {
     workspace?: string;
     wms_url?: string;
     wfs_url?: string;
+    wmts_url?: string;
     bbox?: [number, number, number, number] | null;
     style_name?: string;
 }
@@ -89,6 +90,8 @@ export interface FileMetadata {
     styles?: string;
     format?: string;
     tilematrixset?: string;
+    /** GridSet resolutions in metres per pixel, level 0 first; selects the TileMatrix level. */
+    tilematrixset_resolutions?: number[];
     token?: string;
     layerIndex?: string | number;
     where?: string;

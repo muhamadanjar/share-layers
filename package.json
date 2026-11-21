@@ -59,7 +59,7 @@
       "master"
     ],
     "repositoryUrl": "https://github.com/muhamadanjar/share-layers.git",
-    "tagFormat": "v${version}"
+    "tagFormat": "${version}"
   },
   "keywords": [
     "geospatial",
