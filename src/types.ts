@@ -14,7 +14,7 @@ export type LayerType =
   | 'esri_tileserver'
   | 'esri_imageserver'
   | 'esri_featureserver'
-  | 'esri_vectortileserver';
+  | 'postgis';
 
 export type FileType = 'vector' | 'raster' | 'external';
 

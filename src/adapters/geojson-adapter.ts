@@ -31,8 +31,17 @@ export function createStyledGeoJsonLayer(
 }
 
 export class GeoJsonAdapter implements LayerAdapter {
-  createDeckLayer(config: LayerConfig, onClick?: (info: any) => void): any {
-    return createStyledGeoJsonLayer(config, config.tile_url, onClick);
+  createDeckLayer(
+    config: LayerConfig,
+    onClick?: Parameters<LayerAdapter['createDeckLayer']>[1],
+  ): GeoJsonLayer {
+    return createStyledGeoJsonLayer(
+      config,
+      config.layer_type === 'postgis'
+        ? config.file_metadata?.postgis_features ?? { type: 'FeatureCollection', features: [] }
+        : config.tile_url,
+      onClick,
+    );
   }
 
   async getInfo(config: LayerConfig, coordinate: [number, number]): Promise<FeatureInfoResult> {
