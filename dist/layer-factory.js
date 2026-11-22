@@ -26,7 +26,8 @@ export class LayerFactory {
         this.register('wmts', new WMTSAdapter());
         this.register('wfs', new WFSAdapter());
         const geoJsonAdapter = new GeoJsonAdapter();
-        this.register('geojson', geoJsonAdapter);
+        const postgisAdapter = new GeoJsonAdapter();
+        this.register('postgis', postgisAdapter);
         this.register('kml', geoJsonAdapter);
         const rawVectorAdapter = new RawVectorAdapter();
         this.register('shp', rawVectorAdapter);

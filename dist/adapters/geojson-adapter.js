@@ -22,7 +22,9 @@ export function createStyledGeoJsonLayer(config, data, onClick, idPrefix = 'deck
 }
 export class GeoJsonAdapter {
     createDeckLayer(config, onClick) {
-        return createStyledGeoJsonLayer(config, config.tile_url, onClick);
+        return createStyledGeoJsonLayer(config, config.layer_type === 'postgis'
+            ? config.file_metadata?.postgis_features ?? { type: 'FeatureCollection', features: [] }
+            : config.tile_url, onClick);
     }
     async getInfo(config, coordinate) {
         // GeoJSON features come from DeckGL click handler (properties in object)

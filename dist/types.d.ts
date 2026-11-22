@@ -1,4 +1,4 @@
-export type LayerType = 'tile' | 'vector' | 'mvt' | 'mbtiles' | 'geojson' | 'kml' | 'shp' | 'geopackage' | 'wms' | 'wmts' | 'wfs' | 'esri_mapserver' | 'esri_tileserver' | 'esri_imageserver' | 'esri_featureserver' | 'esri_vectortileserver';
+export type LayerType = 'tile' | 'vector' | 'mvt' | 'mbtiles' | 'geojson' | 'kml' | 'shp' | 'geopackage' | 'wms' | 'wmts' | 'wfs' | 'esri_mapserver' | 'esri_tileserver' | 'esri_imageserver' | 'esri_featureserver' | 'esri_vectortileserver' | 'postgis';
 export type FileType = 'vector' | 'raster' | 'external';
 export type StrokePattern = 'solid' | 'dashed' | 'dotted' | 'dash-dot';
 export type FillPattern = 'solid' | 'hatched' | 'cross-hatched' | 'dotted';
